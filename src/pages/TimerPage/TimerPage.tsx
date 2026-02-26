@@ -1,6 +1,8 @@
 import { useState } from "react"
+import { useSearchParams } from "react-router-dom"
 
 import Timer from "../../components/Timer/Timer"
+import Pomodoro from "../../components/Timer/Pomodoro"
 import Input from "../../components/Input/Input"
 import Select from "../../components/Input/Select"
 import Button from "../../components/Button/Button"
@@ -17,7 +19,11 @@ interface FormData {
   category: string;
 }
 
+type TimerMode = "stopwatch" | "pomodoro"
+
 function TimerPage() {
+  const [ viewParam, setViewParam ] = useSearchParams()
+
   const [formData, setFormData] = useState<FormData>({ sessionName: "", category: "Other" })
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -25,6 +31,17 @@ function TimerPage() {
 
   const { startTimer, pauseTimer, saveTimer, state } = useTimerContext();
   const { addSession, editSession } = useSessions()
+
+  //Switch between regular timer and pomodoro
+  const currentMode = viewParam.get("mode") || "stopwatch"
+
+  const setMode = (newMode: string) => {
+    if(newMode === "stopwatch") {
+      setViewParam({})
+    } else {
+      setViewParam({ mode: newMode })
+    }
+  }
 
   // Create new session when save button is clicked
   const handleSave = () => {
@@ -67,47 +84,59 @@ function TimerPage() {
   }
 
   return (
-    <div className="main-container">
+    <section className="main-container">
 
-      <div className="timer-circle">
-        <Input
-          name={"sessionName"}
-          id="sessionName"
-          placeholder="Add session name..."
-          autoComplete="off"
-          onChange={(e) => setFormData({ ...formData, sessionName: e.target.value })}
-        />
-
-        <Timer />
-
-        <Select
-          name={"category"}
-          id="category"
-          selectLabel={"Select Category"}
-          defaultValue={""}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          options={[
-            "Deep Work",
-            "Admin",
-            "Meeting",
-            "Break",
-            "Other"
-          ]}
-        />
+      <div className="switch-container">
+        <button onClick={() => setMode("stopwatch")} className={currentMode === "stopwatch" ? "active switch" : "switch"}>Timer</button>
+        <button onClick={() => setMode("pomodoro")} className={currentMode === "pomodoro" ? "active switch" : "switch"}>Pomodoro</button>
       </div>
 
-      <div className="timer-button-row">
-        {state.isRunning ?
-          <Button variant="secondary" onClick={pauseTimer}>Pause</Button>
-          :
-          <Button variant={state.msDisplay < 1 ? "primary" : "secondary"} onClick={startTimer}>Start</Button>
-        }
+      {currentMode === "stopwatch" ? (
+        <>
+          <div className="timer-circle">
+            <Input
+              name={"sessionName"}
+              id="sessionName"
+              placeholder="Add session name..."
+              autoComplete="off"
+              onChange={(e) => setFormData({ ...formData, sessionName: e.target.value })}
+            />
 
-        <Button onClick={handleSave} disabled={state.msDisplay < 1}>Save</Button>
-      </div>
+            <Timer />
+
+            <Select
+              name={"category"}
+              id="category"
+              selectLabel={"Select Category"}
+              defaultValue={""}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              options={[
+                "Deep Work",
+                "Admin",
+                "Meeting",
+                "Break",
+                "Other"
+              ]}
+            />
+          </div>
+
+          <div className="timer-button-row">
+            {state.isRunning ?
+              <Button variant="secondary" onClick={pauseTimer}>Pause</Button>
+              :
+              <Button variant={state.msDisplay < 1 ? "primary" : "secondary"} onClick={startTimer}>Start</Button>
+            }
+
+            <Button onClick={handleSave} disabled={state.msDisplay < 1}>Save</Button>
+          </div>
+        </>
+      ) : (
+        <Pomodoro />
+      )}
+      
 
       {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
+        <Modal onClose={() => setIsModalOpen(false)} title="How would you rate your productivity?">
           <Productivity onLevelSelect={(level) => setChosenProductivity(level)} />
 
           <div className="productivity-buttons">
@@ -122,7 +151,7 @@ function TimerPage() {
         </Modal>
       )}
 
-    </div>
+    </section>
   )
 }
 

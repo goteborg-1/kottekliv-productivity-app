@@ -42,6 +42,11 @@
   position: relative;
 }
 
+h2.modal-header {
+  font-size: var(--font-size-lg);
+  padding: 0 64px;
+}
+
 .modal-header {
   display: flex;
   justify-content: center;

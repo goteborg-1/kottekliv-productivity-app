@@ -35,7 +35,6 @@ function ProductivityLogger({onLevelSelect}: {onLevelSelect: (level: string) => 
 
   return(
     <div className="productivity">
-      <h3>How would you rate your productivity during the session?</h3>
 
       <div className="button-group">
       {/* Generate a button for each productivity level */}
