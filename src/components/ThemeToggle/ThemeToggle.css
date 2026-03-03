@@ -8,3 +8,10 @@
   font-size: var(--font-size-lg);
   stroke-width: 0.5px; /* Makes the icon thicker */
 }
+
+
+@media (max-width: 1024px) {
+  .theme-toggle-content {
+    gap: 0
+  }
+  }
