@@ -11,6 +11,7 @@ import Productivity from "../../components/Productivity/Productivity"
 
 import { useTimerContext } from "../../context/TimerContext"
 import { useSessions } from "../../context/SessionContext"
+import { usePomodoro } from "../../hooks/usePomodoro"
 
 import "./TimerPage.css"
 
@@ -18,8 +19,6 @@ interface FormData {
   sessionName: string;
   category: string;
 }
-
-type TimerMode = "stopwatch" | "pomodoro"
 
 function TimerPage() {
   const [ viewParam, setViewParam ] = useSearchParams()
@@ -31,6 +30,7 @@ function TimerPage() {
 
   const { startTimer, pauseTimer, saveTimer, state } = useTimerContext();
   const { addSession, editSession } = useSessions()
+  const { pomodoroData, startPomodoro, pausePomodoro } = usePomodoro()
 
   //Switch between regular timer and pomodoro
   const currentMode = viewParam.get("mode") || "stopwatch"
@@ -91,49 +91,54 @@ function TimerPage() {
         <button onClick={() => setMode("pomodoro")} className={currentMode === "pomodoro" ? "active switch" : "switch"}>Pomodoro</button>
       </div>
 
+      <div className="timer-circle">
+        <Input
+          name={"sessionName"}
+          id="sessionName"
+          placeholder="Add session name..."
+          autoComplete="off"
+          onChange={(e) => setFormData({ ...formData, sessionName: e.target.value })}
+        />
+
+        {currentMode === "stopwatch" ? <Timer /> : <Pomodoro timeLeft={pomodoroData.timeLeft}/>}
+
+        <Select
+          name={"category"}
+          id="category"
+          selectLabel={"Select Category"}
+          defaultValue={""}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          options={[
+            "Deep Work",
+            "Admin",
+            "Meeting",
+            "Break",
+            "Other"
+          ]}
+        />
+      </div>
+
       {currentMode === "stopwatch" ? (
-        <>
-          <div className="timer-circle">
-            <Input
-              name={"sessionName"}
-              id="sessionName"
-              placeholder="Add session name..."
-              autoComplete="off"
-              onChange={(e) => setFormData({ ...formData, sessionName: e.target.value })}
-            />
+        <div className="timer-button-row">
+          {state.isRunning ?
+            <Button variant="secondary" onClick={pauseTimer}>Pause</Button>
+            :
+            <Button variant={state.msDisplay < 1 ? "primary" : "secondary"} onClick={startTimer}>Start</Button>
+          }
 
-            <Timer />
-
-            <Select
-              name={"category"}
-              id="category"
-              selectLabel={"Select Category"}
-              defaultValue={""}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              options={[
-                "Deep Work",
-                "Admin",
-                "Meeting",
-                "Break",
-                "Other"
-              ]}
-            />
-          </div>
-
-          <div className="timer-button-row">
-            {state.isRunning ?
-              <Button variant="secondary" onClick={pauseTimer}>Pause</Button>
-              :
-              <Button variant={state.msDisplay < 1 ? "primary" : "secondary"} onClick={startTimer}>Start</Button>
-            }
-
-            <Button onClick={handleSave} disabled={state.msDisplay < 1}>Save</Button>
-          </div>
-        </>
+          <Button onClick={handleSave} disabled={state.msDisplay < 1}>Save</Button>
+        </div>
       ) : (
-        <Pomodoro />
+        <div className="timer-button-row">
+          {pomodoroData.status === "running" ?
+            <Button variant="secondary" onClick={pausePomodoro}>Pause</Button>
+            :
+            <Button variant={pomodoroData.status === "idle" ? "primary" : "secondary"} onClick={startPomodoro}>Start</Button>
+          }
+
+          <Button onClick={() => console.log("hej")} disabled={pomodoroData.status === "idle"}>Save</Button>
+        </div>
       )}
-      
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)} title="How would you rate your productivity?">

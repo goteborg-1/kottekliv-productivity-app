@@ -1,6 +1,8 @@
-function Pomodoro() {
+import { formatPomodoroDisplay } from "../../utils/FormatHelper"
+
+function Pomodoro({ timeLeft }: {timeLeft: number}) {
   return(
-    <h1>Hej</h1>
+    <h2 className="timer">{formatPomodoroDisplay(timeLeft)}</h2>
   )
 }
 
