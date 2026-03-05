@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import Timer from "../../components/Timer/Timer"
@@ -10,8 +10,8 @@ import Modal from "../../components/Modal/Modal"
 import Productivity from "../../components/Productivity/Productivity"
 
 import { useTimerContext } from "../../context/TimerContext"
-import { useSessions } from "../../context/SessionContext"
-import { usePomodoro } from "../../hooks/usePomodoro"
+import { useSessions, type Session } from "../../context/SessionContext"
+import { usePomodoro, type PomodoroSession } from "../../hooks/usePomodoro"
 
 import "./TimerPage.css"
 
@@ -29,26 +29,39 @@ function TimerPage() {
   const [chosenProductivity, setChosenProductivity] = useState<string | null>(null)
 
   const { startTimer, pauseTimer, saveTimer, state } = useTimerContext();
-  const { addSession, editSession } = useSessions()
-  const { pomodoroData, startPomodoro, pausePomodoro, manualSwitchPomodoro } = usePomodoro()
+  const { sessions, addSession, editSession } = useSessions()
+  const { pomodoroData, startPomodoro, pausePomodoro, manualSwitchPomodoro, finishPomodoro } = usePomodoro()
 
   //Switch between regular timer and pomodoro
-  const currentMode = viewParam.get("mode") || "stopwatch"
+  const currentMode = viewParam.get("mode") || localStorage.getItem("lastTimerMode") || "stopwatch"
 
   const setMode = (newMode: string) => {
     if(newMode === "stopwatch") {
-      setViewParam({})
+      setViewParam({}, { replace: true })
     } else {
-      setViewParam({ mode: newMode })
+      setViewParam({ mode: newMode }, { replace: true })
     }
+
+    localStorage.setItem("lastTimerMode", newMode)
   }
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("lastTimerMode");
+    
+    if (savedMode && savedMode !== currentMode) {
+      setMode(savedMode);
+    }
+  }, [])
 
   // Create new session when save button is clicked
   const handleSave = () => {
-    const timerData = saveTimer()
-    if (!timerData) return;
-
-    const newSession = {
+    let timerData: PomodoroSession | null = null
+    
+    if(currentMode === "stopwatch") timerData = saveTimer()
+    if(currentMode === "pomodoro") timerData = finishPomodoro()
+    if (!timerData) return
+        
+    const newSession: Session = {
       id: timerData.id,
       sessionName: formData.sessionName,
       category: formData.category,
@@ -67,18 +80,16 @@ function TimerPage() {
   }
 
   const addProductivity = (level: string) => {
-    if (!currentId) return;
-    editSession({
-      id: currentId,
-      sessionName: formData.sessionName,
-      category: formData.category,
-      date: "",
-      startTime: "",
-      endTime: "",
-      activeTime: "",
-      msDuration: 0,
-      productivity: level,
-    })
+    if (!currentId) return
+
+    const existingSession = sessions.find(s => s.id === currentId)
+
+    if(existingSession) {
+      editSession({
+        ...existingSession,
+        productivity: level
+      })
+    }
 
     setIsModalOpen(false)
   }
@@ -165,12 +176,17 @@ function TimerPage() {
             <Button variant={pomodoroData.status === "idle" ? "primary" : "secondary"} onClick={startPomodoro}>Start</Button>
           }
 
-          <Button onClick={() => console.log("hej")} disabled={pomodoroData.status === "idle"}>Save</Button>
+          <Button onClick={handleSave} disabled={pomodoroData.status === "idle"}>Save</Button>
         </div>
       )}
 
       {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)} title="How would you rate your productivity?">
+        <Modal onClose={() => {
+          setIsModalOpen(false)
+          setCurrentId(null)
+        }} 
+          title="How would you rate your productivity?"
+        >
           <Productivity onLevelSelect={(level) => setChosenProductivity(level)} />
 
           <div className="productivity-buttons">
@@ -178,7 +194,12 @@ function TimerPage() {
               Save
             </Button>
 
-            <Button onClick={() => setIsModalOpen(false)} variant="secondary">
+            <Button onClick={() => {
+              setIsModalOpen(false)
+              setCurrentId(null)
+            }} 
+            variant="secondary"
+            >
               Skip
             </Button>
           </div>

@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useCallback, act } from "react";
 import { formatDate, formatTime, formatTimeString } from "../utils/FormatHelper";
 
-interface PomodoroSession {
+export interface PomodoroSession {
   id: string,
   startDate: string;
   startTime: string;
@@ -21,7 +21,6 @@ interface PomodoroState {
   sessionStartTime: number,
   latestStartTime: number,
   activeMs: number
-  lastSession: PomodoroSession | null
 }
 
 type PomodoroAction =
@@ -94,7 +93,6 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
         sessionStartTime: 0,
         latestStartTime: 0,
         activeMs: 0,
-        lastSession: null
       }
     case "TICK":
       if (state.status !== "running" || !state.targetTime) return state
@@ -105,19 +103,6 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
         timeLeft: msLeft
       }
     case "FINISH_SESSION": 
-      const totalActiveMs = state.activeMs + (Date.now() - state.latestStartTime)
-      const startDate = new Date(state.sessionStartTime)
-      const endDate = new Date(Date.now())
-
-      const newSession: PomodoroSession = {
-        id: crypto.randomUUID(),
-        startDate: formatDate(startDate),
-        startTime: formatTime(startDate),
-        endTime: formatTime(endDate),
-        activeTime: formatTimeString(totalActiveMs),
-        msDuration: totalActiveMs
-      }
-
       return{
         ...state,
         status: "idle",
@@ -128,7 +113,6 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
         sessionStartTime: 0,
         latestStartTime: 0,
         activeMs: 0,
-        lastSession: newSession
       }
     default:
       return state
@@ -144,7 +128,6 @@ const initialPomodoroState: PomodoroState = {
   sessionStartTime: 0,
   latestStartTime: 0,
   activeMs: 0,
-  lastSession: null
 }
 
 export function usePomodoro() {
@@ -154,9 +137,26 @@ export function usePomodoro() {
   const handleStart = () => dispatch({ type: "START" })
   const handlePause = () => dispatch({ type: "PAUSE" })
   const handleTick = useCallback(() => dispatch({ type: "TICK" }), [])
-  const handleFinish = () => dispatch({ type: "FINISH_SESSION" })
   const handleAutoSwitch = () => dispatch({ type: "AUTO_SWITCH" })
   const handleManualSwitch = (mode: Mode) => dispatch({ type: "MANUAL_SWITCH", payload: mode})
+  const handleFinish = () => {
+    const totalActiveMs = state.activeMs + (Date.now() - state.latestStartTime)
+    const startDate = new Date(state.sessionStartTime)
+    const endDate = new Date(Date.now())
+    
+    const newsession: PomodoroSession = {
+      id: crypto.randomUUID(),
+      startDate: formatDate(startDate),
+      startTime: formatTime(startDate),
+      endTime: formatTime(endDate),
+      activeTime: formatTimeString(totalActiveMs),
+      msDuration: totalActiveMs
+    }
+    
+    dispatch({ type: "FINISH_SESSION" })
+
+    return newsession
+  } 
 
   useEffect(() => {
     let interval: number | undefined;
