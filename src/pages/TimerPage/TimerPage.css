@@ -56,3 +56,51 @@
   justify-content: center;
   gap: var(--space-md);
 }
+
+/* Switch button */
+.switch-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  padding: 4px;
+  background-color: var(--color-secondary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+}
+
+.switch {
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--color-on-secondary);
+  font-size: var(--font-size-xs);
+  padding: 4px;
+}
+
+.switch:not(.active):hover {
+  background-color: var(--color-secondary-hover);
+  transform: translateY(-1px);
+}
+
+.switch.active {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+}
+
+/*Pomodoro*/
+.pomodoro-modes {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.pomodoro-modes .button-base {
+  background-color: transparent;
+  border: 1px solid var(--color-border-muted);
+}
+
+.pomodoro-modes .selected {
+  background-color: var(--color-neutral);
+}

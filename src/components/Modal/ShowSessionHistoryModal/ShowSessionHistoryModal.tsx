@@ -3,6 +3,7 @@ import { type Session, useSessions } from "../../../context/SessionContext";
 import useFormatTime from "../../../hooks/useFormatTime";
 
 import Modal from "../Modal";
+import GridContainer from "../../GridContainer/GridContainer";
 import Card from "../../Card/Card"
 import Button from "../../Button/Button";
 import Input from "../../Input/Input";
@@ -17,8 +18,21 @@ function ShowSessionHistoryModal({onClose}: {onClose: () => void}) {
   const [ editingId, setEditingId ] = useState<string>("")
   const [ editData, setEditData ] = useState<Session | null>(null)
   const [ editActiveTime, setEditActiveTime ] = useState<string>("")
+  const [ isSaved, setIsSaved ] = useState(false);
+
+  //State for loading sessions
+  const [visibleCount, setVisibleCount] = useState(10) //Start with 10 sessions
 
   const makeMsReadable = useFormatTime()
+
+  //Calculate which sessions to show and if there are any more to load
+  const visibleSessions = sessions.slice(0, visibleCount);
+  const hasMore = sessions.length > visibleCount;
+
+  //Function for loading more sessions
+  const loadMore = () => {
+    setVisibleCount(prev => prev + 20)
+  }
   
   //Start edit mode
   const startEdit = (id: string) => {
@@ -44,8 +58,13 @@ function ShowSessionHistoryModal({onClose}: {onClose: () => void}) {
     }
 
     editSession(updatedSession)
-    setEditingId("")
-    setEditData(null)
+    setIsSaved(true)
+
+    setTimeout(() => {
+      setEditingId("")
+      setEditData(null)
+      setIsSaved(false)
+    }, 1500)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -56,162 +75,173 @@ function ShowSessionHistoryModal({onClose}: {onClose: () => void}) {
     }
   }
 
+  if(editingId) return (
+    <Modal onClose={onClose} title="Session History">
+      <div className="session-list edit-mode">
+        <Card>
+          <div className="content">
+
+          <Input 
+            label="Session Name"
+            id="sessionName"
+            name="sessionName"
+            value={editData?.sessionName || ""}
+            onChange={handleChange}
+          />
+
+          <Select 
+            label="Category"
+            id="category"
+            name="category"
+            value={editData?.category || ""}
+            selectLabel="Select Category"
+            onChange={handleChange}
+
+            options={[
+              "Deep Work", 
+              "Admin", 
+              "Meeting", 
+              "Break", 
+              "Other"
+            ]}
+          />
+
+          <Select 
+            label="Productivity"
+            id="productivity"
+            name="productivity"
+            value={editData?.productivity || ""}
+            selectLabel="Select Productivity"
+            onChange={handleChange}
+
+            options={[
+              "1 - Poor", 
+              "2 - Fair", 
+              "3 - Good", 
+              "4 - Very Good", 
+              "5 - Excellent"
+            ]}
+          />
+
+          <div className="time-edit-content">
+            <Input
+              type="date"
+              label="Date"
+              name="date"
+              id="date"
+              value={editData?.date || ""}
+              onChange={handleChange}
+            />
+
+            <div className="button-row">
+              <Input
+                type="time"
+                label="Start Time"
+                name="startTime"
+                id="startTime"
+                value={editData?.startTime || ""}
+                onChange={handleChange}
+              />
+              <Input
+                type="time"
+                label="End Time"
+                name="endTime"
+                id="endTime"
+                value={editData?.endTime || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <Input 
+            type="number"
+            label="Active Time (minutes)"
+            name="msDuration"
+            id="msDuration"
+            value={editActiveTime}
+            onChange={handleChange}
+          />
+
+          {isSaved && (
+            <p className="save-feedback">
+              Changes saved successfully!
+            </p>
+          )}
+
+          <div className="button-row">
+            <Button
+              onClick={saveEdit}
+              size="small"
+            >
+              Save
+            </Button>
+
+            <Button
+              onClick={() => { setEditingId(""); setEditData(null) }}
+              variant="secondary"
+              size="small"
+            >
+              Cancel
+            </Button>
+          </div>
+
+          </div>
+        </Card>
+      </div>
+    </Modal>
+  )
 
   return(
-    <Modal onClose={onClose}>
-      <h2>Session History</h2>
-
-      {sessions.length === 0 && <p className="empty-message">No saved sessions found.</p>}
-      
-      
+    <Modal onClose={onClose} title="Session History">
       <div className="session-list">
-        {sessions.map((session) => (
-          //Check if editing mode is active or not for the specific session
-          editingId === session.id ? (
-            //editing mode
-            <Card key={session.id}>
-              <div className="content">
+        {sessions.length === 0 && <p className="empty-message">No saved sessions found.</p>}
 
-              <Input 
-                label="Session Name"
-                id="sessionName"
-                name="sessionName"
-                value={editData?.sessionName || ""}
-                onChange={handleChange}
-              />
+        <GridContainer columns={2}>
+          {visibleSessions.map((session) => (
+              <div key={session.id} className="session-card">
+                <Card>
+                  <div className="content">
+                    <h3>{session.sessionName || "Untitled Session"}</h3>
 
-              <Select 
-                label="Category"
-                id="category"
-                name="category"
-                value={editData?.category || ""}
-                selectLabel="Select Category"
-                onChange={handleChange}
+                    <div>
+                      <p className="category-text">{session.category}</p>
+                      <p className="productivity-text">Productivity - {session.productivity.split('-')[1]}</p>
+                    </div>
 
-                options={[
-                  "Deep Work", 
-                  "Admin", 
-                  "Meeting", 
-                  "Break", 
-                  "Other"
-                ]}
-              />
+                    <p className="time-info">
+                      <span>{session.date}</span>
+                      <span className="separator">•</span>
+                      <span>{session.startTime} - {session.endTime}</span>
+                    </p>
 
-              <Select 
-                label="Productivity"
-                id="productivity"
-                name="productivity"
-                value={editData?.productivity || ""}
-                selectLabel="Select Productivity"
-                onChange={handleChange}
+                    <p className="active-time">Active time: {session.activeTime}</p>
 
-                options={[
-                  "1 - Poor", 
-                  "2 - Fair", 
-                  "3 - Good", 
-                  "4 - Very Good", 
-                  "5 - Excellent"
-                ]}
-              />
+                    <div className="button-row">
+                      <Button
+                        onClick={() => startEdit(session.id)}
+                        size="small"
+                      >
+                        Edit
+                      </Button>
 
-              <div className="time-edit-content">
-                <Input
-                  type="date"
-                  label="Date"
-                  name="date"
-                  id="date"
-                  value={editData?.date || ""}
-                  onChange={handleChange}
-                />
-
-                <div className="button-row">
-                  <Input
-                    type="time"
-                    label="Start Time"
-                    name="startTime"
-                    id="startTime"
-                    value={editData?.startTime || ""}
-                    onChange={handleChange}
-                  />
-                  <Input
-                    type="time"
-                    label="End Time"
-                    name="endTime"
-                    id="endTime"
-                    value={editData?.endTime || ""}
-                    onChange={handleChange}
-                  />
-                </div>
+                      <Button
+                        onClick={() => deleteSession(session.id)}
+                        variant="secondary"
+                        size="small"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
               </div>
-
-              <Input 
-                type="number"
-                label="Active Time (minutes)"
-                name="msDuration"
-                id="msDuration"
-                value={editActiveTime}
-                onChange={handleChange}
-              />
-
-              <div className="button-row">
-                <Button
-                  onClick={saveEdit}
-                  size="small"
-                >
-                  Save
-                </Button>
-
-                <Button
-                  onClick={() => { setEditingId(""); setEditData(null) }}
-                  variant="secondary"
-                  size="small"
-                >
-                  Cancel
-                </Button>
-              </div>
-
-              </div>
-            </Card>
-          ) : (
-            //not editing mode
-            <Card key={session.id}>
-              <div className="content">
-
-                <h3>{session.sessionName || "Untitled Session"}</h3>
-
-                <div>
-                  <p className="category-text">{session.category}</p>
-                  <p className="productivity-text">Productivity - {session.productivity.split('-')[1]}</p>
-                </div>
-
-                <p className="time-info">
-                  <span>{session.date}</span>
-                  <span className="separator">•</span>
-                  <span>{session.startTime} - {session.endTime}</span>
-                </p>
-
-                {session.activeTime && <p className="active-time">Active time: {session.activeTime}</p>}
-
-                <div className="button-row">
-                  <Button
-                    onClick={() => startEdit(session.id)}
-                    size="small"
-                  >
-                    Edit
-                  </Button>
-
-                  <Button
-                    onClick={() => deleteSession(session.id)}
-                    variant="secondary"
-                    size="small"
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )
-        ))}
+          ))}
+        </GridContainer>
+        {hasMore &&
+          <Button variant="neutral" size="small" onClick={loadMore}>
+            Show more Sessions ({sessions.length - visibleCount} remaining)
+          </Button>
+        }
       </div>
     </Modal>
   )
