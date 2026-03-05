@@ -38,6 +38,7 @@ function TimerPage() {
   const setMode = (newMode: string) => {
     if(newMode === "stopwatch") {
       setViewParam({}, { replace: true })
+      manualSwitchPomodoro("focus")
     } else {
       setViewParam({ mode: newMode }, { replace: true })
     }
