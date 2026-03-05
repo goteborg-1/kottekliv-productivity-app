@@ -30,7 +30,7 @@ function TimerPage() {
 
   const { startTimer, pauseTimer, saveTimer, state } = useTimerContext();
   const { addSession, editSession } = useSessions()
-  const { pomodoroData, startPomodoro, pausePomodoro } = usePomodoro()
+  const { pomodoroData, startPomodoro, pausePomodoro, manualSwitchPomodoro } = usePomodoro()
 
   //Switch between regular timer and pomodoro
   const currentMode = viewParam.get("mode") || "stopwatch"
@@ -90,6 +90,35 @@ function TimerPage() {
         <button onClick={() => setMode("stopwatch")} className={currentMode === "stopwatch" ? "active switch" : "switch"}>Timer</button>
         <button onClick={() => setMode("pomodoro")} className={currentMode === "pomodoro" ? "active switch" : "switch"}>Pomodoro</button>
       </div>
+
+      {currentMode === "pomodoro" && 
+        <div className="pomodoro-modes">
+          <Button 
+            variant="neutral" 
+            size="small" 
+            isSelected={pomodoroData.mode === "focus"}
+            onClick={() => manualSwitchPomodoro("focus")}
+            >
+            Pomodoro
+          </Button>
+          <Button 
+            variant="neutral" 
+            size="small" 
+            isSelected={pomodoroData.mode === "short break"}
+            onClick={() => manualSwitchPomodoro("short break")}
+            >
+            Short Break
+          </Button>
+          <Button 
+            variant="neutral" 
+            size="small" 
+            isSelected={pomodoroData.mode === "long break"}
+            onClick={() => manualSwitchPomodoro("long break")}
+            >
+            Long Break
+          </Button>
+        </div>
+      }
 
       <div className="timer-circle">
         <Input

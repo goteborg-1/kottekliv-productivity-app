@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback, act } from "react";
 import { formatDate, formatTime, formatTimeString } from "../utils/FormatHelper";
 
 interface PomodoroSession {
@@ -10,9 +10,11 @@ interface PomodoroSession {
   msDuration: number;
 }
 
+type Mode = "focus" | "short break" | "long break"
+
 interface PomodoroState {
   status: "idle" | "running" | "paused",
-  mode: "work" | "short break" | "long break",
+  mode: Mode,
   timeLeft: number,
   targetTime: number | null,
   completedCycles: number,
@@ -26,6 +28,7 @@ type PomodoroAction =
   | {type: "START"}
   | {type: "PAUSE"}
   | {type: "AUTO_SWITCH"}
+  | {type: "MANUAL_SWITCH", payload: Mode}
   | {type: "TICK"}
   | {type: "FINISH_SESSION"}
 
@@ -49,17 +52,17 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
         activeMs: newActiveMs
       }
     case "AUTO_SWITCH": {
-      const wasWorking = state.mode === "work"
+      const wasWorking = state.mode === "focus"
       //Complete a cycle after each work session
       const newCompletedCycles = wasWorking ? state.completedCycles + 1 : state.completedCycles
 
-      let nextMode: "work" | "short break" | "long break"
+      let nextMode: Mode
       let nextCounter: number
       if(wasWorking) {
         nextMode = newCompletedCycles % 4 === 0 ? "long break" : "short break"
         nextCounter = newCompletedCycles % 4 === 0 ? 15 * 60 * 1000 : 5 * 60 * 1000
       } else {
-        nextMode = "work"
+        nextMode = "focus"
         nextCounter = 25 * 60 * 1000
       }
 
@@ -71,6 +74,28 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
         targetTime: Date.now() + nextCounter
       }
     }
+    case "MANUAL_SWITCH":
+      let modeTime: number
+      if(action.payload === "focus") {
+        modeTime = 25 * 60 * 1000
+      } else if (action.payload === "short break") {
+        modeTime = 5 * 60 * 1000
+      } else {
+        modeTime = 15 * 60 * 1000
+      }
+
+      return {
+        ...state, 
+        status: "idle",
+        mode: action.payload,
+        timeLeft: modeTime,
+        targetTime: null,
+        completedCycles: 0,
+        sessionStartTime: 0,
+        latestStartTime: 0,
+        activeMs: 0,
+        lastSession: null
+      }
     case "TICK":
       if (state.status !== "running" || !state.targetTime) return state
 
@@ -96,7 +121,7 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
       return{
         ...state,
         status: "idle",
-        mode: "work",
+        mode: "focus",
         timeLeft: 25 * 60 * 1000,
         targetTime: null,
         completedCycles: 0,
@@ -105,12 +130,14 @@ function PomodoroReducer(state: PomodoroState, action: PomodoroAction): Pomodoro
         activeMs: 0,
         lastSession: newSession
       }
+    default:
+      return state
   }
 }
 
 const initialPomodoroState: PomodoroState = {
   status: "idle",
-  mode: "work",
+  mode: "focus",
   timeLeft: 25 * 60 * 1000,
   targetTime: null,
   completedCycles: 0,
@@ -129,6 +156,7 @@ export function usePomodoro() {
   const handleTick = useCallback(() => dispatch({ type: "TICK" }), [])
   const handleFinish = () => dispatch({ type: "FINISH_SESSION" })
   const handleAutoSwitch = () => dispatch({ type: "AUTO_SWITCH" })
+  const handleManualSwitch = (mode: Mode) => dispatch({ type: "MANUAL_SWITCH", payload: mode})
 
   useEffect(() => {
     let interval: number | undefined;
@@ -153,6 +181,7 @@ export function usePomodoro() {
     startPomodoro: handleStart,
     pausePomodoro: handlePause,
     finishPomodoro: handleFinish,
-    autoSwitchPomodoro: handleAutoSwitch
+    autoSwitchPomodoro: handleAutoSwitch,
+    manualSwitchPomodoro: handleManualSwitch
   }
 }

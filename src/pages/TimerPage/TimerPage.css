@@ -88,3 +88,19 @@
   color: var(--color-on-primary);
   font-weight: 600;
 }
+
+/*Pomodoro*/
+.pomodoro-modes {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.pomodoro-modes .button-base {
+  background-color: transparent;
+  border: 1px solid var(--color-border-muted);
+}
+
+.pomodoro-modes .selected {
+  background-color: var(--color-neutral);
+}
