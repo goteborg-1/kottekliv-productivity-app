@@ -30,7 +30,7 @@ function TimerPage() {
 
   const { startTimer, pauseTimer, saveTimer, state } = useTimerContext();
   const { sessions, addSession, editSession } = useSessions()
-  const { pomodoroData, startPomodoro, pausePomodoro, manualSwitchPomodoro, finishPomodoro } = usePomodoro()
+  const { pomodoroData, startPomodoro, pausePomodoro, finishPomodoro } = usePomodoro()
 
   //Switch between regular timer and pomodoro
   const currentMode = viewParam.get("mode") || localStorage.getItem("lastTimerMode") || "stopwatch"
@@ -38,7 +38,6 @@ function TimerPage() {
   const setMode = (newMode: string) => {
     if(newMode === "stopwatch") {
       setViewParam({}, { replace: true })
-      manualSwitchPomodoro("focus")
     } else {
       setViewParam({ mode: newMode }, { replace: true })
     }
