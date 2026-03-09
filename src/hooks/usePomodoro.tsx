@@ -116,7 +116,6 @@ export function usePomodoro() {
   const handlePause = () => dispatch({ type: "PAUSE" })
   const handleTick = useCallback(() => dispatch({ type: "TICK" }), [])
   const handleAutoSwitch = () => dispatch({ type: "AUTO_SWITCH" })
-  const handleManualSwitch = (mode: Mode) => dispatch({ type: "MANUAL_SWITCH", payload: mode})
   const handleFinish = () => {
     const totalActiveMs = state.activeMs + (Date.now() - state.latestStartTime)
     const startDate = new Date(state.sessionStartTime)
@@ -160,6 +159,5 @@ export function usePomodoro() {
     pausePomodoro: handlePause,
     finishPomodoro: handleFinish,
     autoSwitchPomodoro: handleAutoSwitch,
-    manualSwitchPomodoro: handleManualSwitch
   }
 }

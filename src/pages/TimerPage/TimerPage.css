@@ -64,7 +64,7 @@
   background-color: var(--color-secondary);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-pill);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .switch {
@@ -84,7 +84,7 @@
 .switch.active {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /*Pomodoro*/
