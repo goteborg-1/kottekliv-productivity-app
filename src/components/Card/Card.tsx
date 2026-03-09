@@ -28,6 +28,7 @@ function Card({ children, title, span = 1, onClick, className }: CardProps) {
     style={addSpan}
     onClick={onClick}
     role={onClick ? "button" : undefined}
+    tabIndex={onClick ? 0 : undefined}
     >
 
       {/* Render h2 if title exists */}
