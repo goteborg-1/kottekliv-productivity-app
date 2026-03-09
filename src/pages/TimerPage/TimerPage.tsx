@@ -103,35 +103,6 @@ function TimerPage() {
         <button onClick={() => setMode("pomodoro")} className={currentMode === "pomodoro" ? "active switch" : "switch"}>Pomodoro</button>
       </div>
 
-      {currentMode === "pomodoro" && 
-        <div className="pomodoro-modes">
-          <Button 
-            variant="neutral" 
-            size="small" 
-            isSelected={pomodoroData.mode === "focus"}
-            onClick={() => manualSwitchPomodoro("focus")}
-            >
-            Pomodoro
-          </Button>
-          <Button 
-            variant="neutral" 
-            size="small" 
-            isSelected={pomodoroData.mode === "short break"}
-            onClick={() => manualSwitchPomodoro("short break")}
-            >
-            Short Break
-          </Button>
-          <Button 
-            variant="neutral" 
-            size="small" 
-            isSelected={pomodoroData.mode === "long break"}
-            onClick={() => manualSwitchPomodoro("long break")}
-            >
-            Long Break
-          </Button>
-        </div>
-      }
-
       <div className="timer-circle">
         <Input
           name={"sessionName"}
@@ -159,6 +130,10 @@ function TimerPage() {
         />
       </div>
 
+      {currentMode === "pomodoro" && (pomodoroData.status === "running" || pomodoroData.status === "paused") && (
+        <p className="pomodoro-mode">{pomodoroData.mode}</p>
+      )}
+
       {currentMode === "stopwatch" ? (
         <div className="timer-button-row">
           {state.isRunning ?
@@ -170,7 +145,7 @@ function TimerPage() {
           <Button onClick={handleSave} disabled={state.msDisplay < 1}>Save</Button>
         </div>
       ) : (
-        <div className="timer-button-row">
+        <div className={`timer-button-row ${(pomodoroData.status === "running" || pomodoroData.status === "paused") && "pomodoro-buttons"}`}>
           {pomodoroData.status === "running" ?
             <Button variant="secondary" onClick={pausePomodoro}>Pause</Button>
             :
