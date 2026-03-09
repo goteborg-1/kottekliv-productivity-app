@@ -3,10 +3,11 @@ import "./Modal.css"
 
 interface ModalProps {
   children: React.ReactNode
-  onClose: () => void
+  onClose: () => void,
+  title?: React.ReactNode
 }
 
-function Modal({children, onClose}: ModalProps) {
+function Modal({children, onClose, title}: ModalProps) {
 
   const handleClickOutside = () => {
     onClose()
@@ -19,14 +20,19 @@ function Modal({children, onClose}: ModalProps) {
 
   return(
     <div className="overlay" onClick={handleClickOutside}>
-      <div className="container" onClick={stopClick}>
-        <button
-          className="close-button"
-          onClick={onClose}
-        >
-          <IoMdClose /> 
-        </button>
-        {children}
+      <div className="modal-container" onClick={stopClick}>
+        <div className="modal-header-container">
+          {title && <h2 className="modal-header">{title}</h2>}
+          <button
+            className="close-button"
+            onClick={onClose}
+          >
+            <IoMdClose /> 
+          </button>
+        </div>
+        <div className="modal-content">
+          {children}
+        </div>
       </div>
     </div>
   )

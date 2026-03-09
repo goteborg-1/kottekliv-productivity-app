@@ -62,7 +62,7 @@
 
 .todo-nav-item.active {
   background-color: var(--color-secondary);
-  color: var(--color-primary);
+  color: var(--color-on-secondary);
   border-color: var(--color-primary);
   font-weight: 500;
 }

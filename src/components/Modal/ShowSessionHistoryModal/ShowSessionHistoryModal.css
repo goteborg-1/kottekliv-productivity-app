@@ -1,13 +1,14 @@
 .session-list {
   display: flex;
   flex-direction: column;
-  margin-top: var(--space-md);
+  align-items: center;
   gap: var(--space-md);
 }
 
 .content {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   text-align: center;
   gap: var(--space-sm);
 }
@@ -53,13 +54,44 @@
 }
 
 /* Empty message */
-
 .empty-message {
-  margin-top: var(--space-lg);
   color: var(--color-text-muted);
 }
 
+/* Load more */
+.session-card {
+  animation: slideInEdit 0.4s ease-out forwards;
+}
+
 /* Edit specific */
+@keyframes slideInEdit {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.edit-mode {
+  grid-column: span 2;
+  scroll-snap-align: none;
+  animation: slideInEdit 0.25s ease-out forwards;
+  width: 100%;
+}
+
+@keyframes cardReturn {
+  from {
+    opacity: 0;
+    transform: scale(1.05); /* Börjar lite större (där edit-kortet slutade) */
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .time-edit-content {
   display: flex;
   flex-direction: column;
@@ -71,4 +103,14 @@
 
 .time-edit-content .time-info > * {
   flex: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.save-feedback {
+  font-size: var(--font-size-sm);
+  animation: fadeIn 0.3s ease-out;
 }

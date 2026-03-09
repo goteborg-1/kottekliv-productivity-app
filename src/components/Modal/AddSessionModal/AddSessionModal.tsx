@@ -27,8 +27,7 @@ function AddSessionModal({onClose}: AddSessionModalProps) {
   }
 
   return(
-    <Modal onClose={onClose}>
-      <h2>Log Session</h2>
+    <Modal onClose={onClose} title="Log Session">
       <form 
         action="submit"
         onSubmit={handleForm}

@@ -22,6 +22,7 @@ function Header() {
               to={item.path}
               /* Adds the "active" class if the item matches the current page */
               className={({ isActive }) => (isActive ? "active nav-item" : "nav-item")}
+              aria-label={item.title}
             >
               {/* Calls changePage to switch views in the main component when clicked */}
               <span className="icon">{item.icon}</span>
