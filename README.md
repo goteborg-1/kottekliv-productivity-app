@@ -1,7 +1,6 @@
 # Kottekliv Productivity Tool
-Kottekliv is a simple but powerful tool to help you manage your time and stay focused. It combines a task list with two types of timers (Stopwatch and Pomodoro) and shows your progress through easy-to-understand graphs.
+Kottekliv is a simple but powerful tool to help you manage your time and stay focused. It combines a task list with two types of timers (Stopwatch and Pomodoro) and shows your progress through easy-to-understand graphs. The app is built with React and TypeScript to be fast, reliable, and easy to use on both computers and mobile devices.
 
-The app is built with React and TypeScript to be fast, reliable, and easy to use on both computers and mobile devices.
 Live Demo: [kottekliv.com](kottekliv.com)
 
 ## Features
