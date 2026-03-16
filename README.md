@@ -4,7 +4,7 @@ Kottekliv is a simple but powerful tool to help you manage your time and stay fo
 The app is built with React and TypeScript to be fast, reliable, and easy to use on both computers and mobile devices.
 
 ## Links
-- Live Demo: [kottekliv.com](kottekliv.com)
+Live Demo: [kottekliv.com](kottekliv.com)
 
 ## Features
 - **Two Timers:** Choose between a regular Stopwatch or a Pomodoro timer.
