@@ -3,15 +3,14 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 95%;
+  max-width: 500px;
   aspect-ratio: 1 / 1;
-  width: 90%;
-  max-width: 450px;
-  
   border: 6px solid var(--color-primary);
   border-radius: var(--radius-pill);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1), inset 0 0 15px rgba(0, 0, 0, 0.05);
   padding: var(--space-xl);
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 .timer-circle > * {
@@ -44,7 +43,7 @@
 .timer-button-row {
   display: flex;
   gap: var(--space-md);
-  margin-top: var(--space-xl);
+  margin-top: var(--space-md);
 }
 
 .timer-button-row .button-base {
@@ -64,7 +63,7 @@
   background-color: var(--color-secondary);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-pill);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 .switch {
