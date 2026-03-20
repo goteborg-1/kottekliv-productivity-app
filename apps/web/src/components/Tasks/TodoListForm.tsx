@@ -9,7 +9,7 @@ function TodoList() {
 
   const [text, setText] = useState("");
   const {listId} = useParams<{listId: string}>() //Get ID from URL
-  const {dispatch} = useTodo();
+  const {addTodo} = useTodo();
 
 
 
@@ -18,7 +18,7 @@ function TodoList() {
       if (text.trim() === "" || !listId) return
 
       // sends text as payload and then deletes it from text useState
-      dispatch({ type: "ADD_TODO", payload: {text, listId}}) 
+      addTodo(text, listId)
       setText("");
   };
 

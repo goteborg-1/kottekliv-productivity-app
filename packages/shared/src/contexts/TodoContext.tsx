@@ -1,4 +1,4 @@
-import { createContext, useReducer, useEffect, useContext, useCallback } from "react";
+import React, { createContext, useReducer, useEffect, useContext, useCallback, useMemo } from "react";
 import { getFromStorage, saveToStorage } from "../utils/storage";
 
 export interface Todo {
@@ -25,15 +25,20 @@ type TodoAction =
 //
 // använda "createContext" som en radio som skickar info till komponenter
 //
-
-interface TodoContextType {
-  state: TodoList[];
-  dispatch: React.Dispatch<TodoAction>;
+interface TodoContextValue {
+  state: TodoList[],
+  setTodos: (state: TodoList[]) => void,
+  createList: (title: string, listId: string) => void,
+  deleteList: (listId: string) => void,
+  addTodo: (text: string, listId: string) => void,
+  toggleTodo: (taskId: number, listId: string) => void,
+  editTodo: (taskId: number, listId: string, newText: string) => void,
+  deleteTodo: (taskId: number, listId: string) => void,
   getProgress: (todos: Todo[]) => { totalTodos: number; finishedTodos: number }
 }
 
 // sändaren
-export const TodoContext = createContext<TodoContextType | undefined>(undefined);
+export const TodoContext = createContext<TodoContextValue | undefined>(undefined);
 
 function toDoreducer(state: TodoList[], action: TodoAction) {
   switch (action.type) {
@@ -109,7 +114,6 @@ function toDoreducer(state: TodoList[], action: TodoAction) {
   }
 }
 
-
 export function TodoProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(toDoreducer, []);
 
@@ -136,13 +140,47 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
     return { totalTodos, finishedTodos }
   }, [])
 
+  const contextValue: TodoContextValue = useMemo(() => ({
+    state,
+    
+    setTodos: (payload) => {
+      dispatch({ type: "SET_TODOS", payload })
+    },
+
+    createList: (title, listId) => {
+      dispatch({ type: "CREATE_LIST", payload: { title, id: listId } });
+    },
+
+    addTodo: (text, listId) => {
+      dispatch({ type: "ADD_TODO", payload: { text, listId } });
+    },
+
+    toggleTodo: (taskId, listId) => {
+      dispatch({ type: "TOGGLE_TODO", payload: { todoId: taskId, listId } });
+    },
+
+    editTodo: (taskId, listId, newText) => {
+      dispatch({ type: "EDIT_TODO", payload: { todoId: taskId, listId, newText } });
+    },
+
+    deleteTodo: (taskId, listId) => {
+      dispatch({ type: "DELETE_TODO", payload: { todoId: taskId, listId } });
+    },
+
+    deleteList: (listId) => {
+      dispatch({ type: "DELETE_LIST", payload: listId });
+    },
+
+    getProgress
+  }), [state, dispatch]);
+
 
   // value=  är antenn signalerna som skickas. 
   // state -> returns state object
   // dispatch -> use to update state object (reducer function)
   // totalItems -> returns total items on todo list
   return (
-    <TodoContext.Provider value={{ state, dispatch, getProgress }}> 
+    <TodoContext.Provider value={contextValue}> 
       {children}
     </TodoContext.Provider>
   )
@@ -153,7 +191,7 @@ export const useTodo = () => {
   const context = useContext(TodoContext);
 
   if (!context) {
-    throw new Error("useTodo mste användas inom en TodoProvider")
+    throw new Error("useTodo måste användas inom en TodoProvider")
   }
 
   return context

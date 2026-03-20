@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Outlet, NavLink, useParams, useNavigate } from "react-router-dom"
-import { useTodo } from "@kottekliv/shared"
+import { getTasksToDisplay, useTodo } from "@kottekliv/shared"
 import { ChevronRight, ChevronLeft, X } from "lucide-react"
 
 import Card from "../../components/Card/Card"
@@ -10,19 +10,21 @@ import "./TaskPage.css"
 function TaskPage() {
   const navigate = useNavigate();
 
-  const { state, dispatch, getProgress } = useTodo()
-  const { listId } = useParams()
+  const { state, createList, deleteList, getProgress } = useTodo()
+  const { listId: urlListId } = useParams()
   
   const [isAdding, setIsAdding] = useState(false)
   const [newListTitle, setNewListTitle] = useState("")
+
+  const listId = urlListId ?? "overview"
 
   const handleCreateList = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newListTitle.trim() === "") return
 
-    const newId = Date.now().toString()
+    const newId = `l-${Date.now()}`
 
-    dispatch({ type: "CREATE_LIST", payload: {title: newListTitle, id: newId} })
+    createList(newListTitle, newId)
     setNewListTitle("")
 
     navigate(`/tasks/${newId}`); //Redirect to the new page
@@ -31,10 +33,10 @@ function TaskPage() {
 
   // handle click outside input, if nothing is filled, close, if filled, save
   const handleBlur = () => {
-    const newId = Date.now().toString()
+    const newId = `l-${Date.now()}`
 
     if (newListTitle.trim() !== "") {
-      dispatch({ type: "CREATE_LIST", payload: {title: newListTitle, id: newId} });
+      createList(newListTitle, newId)
       setNewListTitle("");
       navigate(`/tasks/${newId}`); //Redirect to the new page
     }
@@ -47,10 +49,7 @@ function TaskPage() {
   }
 
   //Find total tasks and finished tasks for the current list
-  const currentList = state.find(list => list.id.toString() === listId); //Will be undefined (overview) or the current list
-  const relevantTodos = currentList 
-    ? currentList.todos 
-    : state.flatMap(list => list.todos || []); //If undefined (overview) go through all lists
+  const relevantTodos = getTasksToDisplay(state, listId)
   const { totalTodos, finishedTodos } = getProgress(relevantTodos);
 
   return(
@@ -69,9 +68,7 @@ function TaskPage() {
                         className="delete-list-button"
                         onClick={(e) => {
                           e.preventDefault()
-                          if(window.confirm(`Are you sure you want to delete todo list "${list.title}"?`)) {
-                            dispatch({ type: "DELETE_LIST", payload: list.id })
-                          }
+                          if(window.confirm(`Are you sure you want to delete todo list "${list.title}"?`)) {deleteList(list.id)}
                         }}
                       >
                         <X />
@@ -104,7 +101,7 @@ function TaskPage() {
               <button onClick={() => scroll(150)} className="nav-arrow"> <ChevronRight  /> </button>
             </div>
 
-            <h2 className="todo-title">{state.find(list => list.id.toString() === listId)?.title || "Overview"}</h2>
+            <h2 className="todo-title">{state.find(list => list.id === listId)?.title || "Overview"}</h2>
 
             {totalTodos > 0 ? <p className="todo-stats">{finishedTodos}/{totalTodos} finished</p> : "Start by adding a task!"}
             <Outlet />

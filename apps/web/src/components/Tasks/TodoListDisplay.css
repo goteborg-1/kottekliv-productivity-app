@@ -17,7 +17,7 @@
     transform: translateY(0); 
   }
 }
-
+ 
 .todo-item {
   display: flex;
   justify-content: left;

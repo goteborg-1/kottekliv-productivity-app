@@ -27,11 +27,13 @@ type TimerAction =
   | { type: "PAUSE"; payload: { nowMs: number } }
   | { type: "TICK";  payload: { nowMs: number } }
   | { type: "SAVE";  payload: { sessionData: LastSession } }
+  | { type: "RESET"}
 
 interface TimerContextValue {
   state: TimerState;
   startTimer: () => void;
   pauseTimer: () => void;
+  resetTimer: () => void;
   saveTimer: () => LastSession | null;
   currentTimer: () => string;
   newestSession: LastSession | null;
@@ -105,6 +107,16 @@ const timerReducer = (state: TimerState, action: TimerAction): TimerState => {
         lastSession: action.payload.sessionData,
       };
 
+    case "RESET":
+      return {
+        ...state,
+        isRunning: false,
+        msStartTime: 0,
+        msPauseStart: 0,
+        msTotalPaused: 0,
+        msDisplay: 0,
+      }
+
     default:
       return state;
   }
@@ -130,9 +142,9 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     let interval: number | undefined;
 
     if (state.isRunning) {
-      interval = window.setInterval(() => {
+      interval = setInterval(() => {
         dispatch({ type: "TICK", payload: { nowMs: Date.now() } });
-      }, 100);
+      }, 100) as unknown as number;
     }
 
     return () => clearInterval(interval);
@@ -140,6 +152,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
 
   const startTimer = () => dispatch({ type: "START", payload: { nowMs: Date.now() } });
   const pauseTimer = () => dispatch({ type: "PAUSE", payload: { nowMs: Date.now() } });
+  const resetTimer = () => dispatch({ type: "RESET" })
 
   const saveTimer = (): LastSession | null => {
     if (state.msStartTime === 0) {
@@ -182,7 +195,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const newestSession = state.lastSession;
 
   return (
-    <TimerContext.Provider value={{ test, state, startTimer, pauseTimer, saveTimer, currentTimer, newestSession }}>
+    <TimerContext.Provider value={{ test, state, startTimer, pauseTimer, saveTimer, resetTimer, currentTimer, newestSession }}>
       {children}
     </TimerContext.Provider>
   )

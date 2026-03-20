@@ -1,44 +1,26 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { type Todo, type TodoList, useTodo } from "@kottekliv/shared";
+import { getTasksToDisplay, getSortedTasks, type Todo, type TodoList, useTodo } from "@kottekliv/shared";
 import Input from "../Input/Input";
 
 import { IoRadioButtonOffOutline, IoRadioButtonOn } from "react-icons/io5";
 import { FiEdit3, FiTrash } from "react-icons/fi";
 import "./TodoListDisplay.css";
-
+ 
 function TodoListDisplay() {
 
-  const { state, dispatch } = useTodo()
+  const { state, editTodo, toggleTodo, deleteTodo } = useTodo()
   const { listId: urlListId } = useParams()
-
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editText, setEditText] = useState<string>("")
+  
+  const listId = urlListId ?? "overview"
 
-  // Find which todos to show
-  let tasksToDisplay: (Todo & { listId: string })[] = []
-
-  if (!urlListId) {
-    // show all todos from all lists, tagged with their listId
-    tasksToDisplay = state.flatMap((list: TodoList) =>
-      (list.todos || []).map((todo) => ({ ...todo, listId: list.id }))
-    )
-  } else {
-    // show only its todos
-    const currentList = state.find((list: TodoList) => list.id.toString() === urlListId);
-    tasksToDisplay = currentList
-      ? currentList.todos.map((todo) => ({ ...todo, listId: currentList.id }))
-      : []
-  }
-
-  // Sort: incomplete first, then completed sorted by completion time
-  const sortedTasks = [...tasksToDisplay].sort((a, b) => {
-    if (a.isCompleted !== b.isCompleted) {
-      return Number(a.isCompleted) - Number(b.isCompleted)
-    }
-    return (a.completedAt ?? 0) - (b.completedAt ?? 0)
-  })
+  const sortedTasks = useMemo(() => {
+    const tasksToDisplay = getTasksToDisplay(state, listId)
+    return getSortedTasks(tasksToDisplay)
+  }, [state, listId])
 
   const handleStartEdit = (task: Todo) => {
     setEditingId(task.id);
@@ -49,14 +31,7 @@ function TodoListDisplay() {
     e.preventDefault();
     if (editText.trim() === "") return;
 
-    dispatch({
-      type: "EDIT_TODO",
-      payload: {
-        todoId: task.id,
-        listId: urlListId || task.listId,
-        newText: editText
-      }
-    });
+    editTodo(task.id, task.listId, editText)
     setEditingId(null);
     setEditText("")
   };
@@ -70,7 +45,7 @@ function TodoListDisplay() {
         >
           <div className="todo-checkbox">
             <button
-              onClick={() => dispatch({ type: "TOGGLE_TODO", payload: { todoId: task.id, listId: urlListId || task.listId } })}
+              onClick={() => toggleTodo(task.id, task.listId)}
               className="check-btn"
             >
               {task.isCompleted ? (
@@ -101,12 +76,7 @@ function TodoListDisplay() {
               <button className="edit-todo-button" onClick={() => handleStartEdit(task)}>
                 <FiEdit3 />
               </button>
-              <button className="edit-todo-button" onClick={() => {
-                dispatch({
-                  type: "DELETE_TODO",
-                  payload: { todoId: task.id, listId: urlListId || task.listId }
-                })
-              }}>
+              <button className="edit-todo-button" onClick={() => deleteTodo(task.id, task.listId)}>
                 <FiTrash />
               </button>
             </div>
