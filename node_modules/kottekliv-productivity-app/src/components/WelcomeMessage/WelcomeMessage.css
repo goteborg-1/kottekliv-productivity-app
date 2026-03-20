@@ -1,0 +1,14 @@
+.welcome-message {
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+  letter-spacing: -0.02em;
+}
+
+.welcome-message span {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-size: var(--font-size-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
