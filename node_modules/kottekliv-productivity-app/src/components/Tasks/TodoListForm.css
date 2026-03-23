@@ -1,0 +1,29 @@
+.todo-form {
+  flex-shrink: 0;
+  padding-top: var(--space-md);
+}
+
+.todo-form form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-muted);
+  width: 100%;
+  justify-self: center;
+}
+
+.todo-form form:focus-within {
+  border-color: var(--color-primary);
+}
+
+.todo-form input {
+  flex: 1;
+  border: none;
+}
+
+.todo-form button {
+  padding: var(--space-xs) var(--space-lg);
+  height: fit-content;
+  margin-right: var(--space-xs);
+}
