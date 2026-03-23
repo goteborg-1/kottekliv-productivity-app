@@ -1,3 +1,4 @@
+// For mobile version of local storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export async function saveToStorage(key: string, value: unknown) {
