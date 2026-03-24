@@ -5,6 +5,11 @@
     "apps/*",
     "packages/*"
   ],
+  "scripts": {
+    "test": "jest",
+    "web": "npm run dev -w apps/web",
+    "mobile": "npm run start -w apps/mobile"
+  },
   "optionalDependencies": {
     "@esbuild/linux-x64": "0.27.2",
     "@esbuild/win32-x64": "0.27.2"

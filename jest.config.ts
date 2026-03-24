@@ -2,12 +2,12 @@ import type { Config } from 'jest'
 
 const config: Config = {
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/apps/web/src/test/setupTests.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
   },
   moduleNameMapper: {
-    '\\.(css|scss|sass|less)$': '<rootDir>/src/test/styleMock.ts',
+    '\\.(css|scss|sass|less)$': '<rootDir>/apps/web/src/test/styleMock.ts',
   },
 }
 
