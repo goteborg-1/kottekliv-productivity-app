@@ -57,8 +57,8 @@ h1 {
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 @media (max-width: 1024px) {  
